@@ -102,7 +102,6 @@ class SelfAttention(nn.Module):
 
         # compute the attention weights
         weights = q @ k.transpose(-2, -1) * k.shape[-1]**0.5 # (B,T,T) (scaling by sqrt of head size)
-        weights = weights.softmax(dim=-1) # (B,T,T)
         mask=torch.tril(torch.ones(T,T))
 
         # for decoder attention, we don't want to attend to future tokens. But for encoder attention, we want to attend to all tokens.
@@ -201,7 +200,7 @@ def train():
             optimizer.step()
         
         losses=estimate_loss(model, train_dataloader, val_dataloader)
-        print('Train loss: ', losses['train'],'Val loss: ', losses['val'])
+        print('Epoch: ', i,'Train loss: ', losses['train'],'Val loss: ', losses['val'])
 
         # example generation
         output = model.generate(torch.zeros((1,1),dtype=torch.long),max_new_tokens=100).tolist()[0]
