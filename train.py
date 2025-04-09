@@ -93,14 +93,18 @@ class SelfAttention(nn.Module):
         self.value = nn.Linear(n_embed, head_size,bias=False)
 
     def forward(self, x):
-        # T is the context length, C is the embed size
+        # B is batch size, T is the context length, C is the embed size
         B,T,C = x.shape
         assert C==self.n_embed, "n_embed must be equal to the number of features in the input"
-        q = self.query(x) # (B,T,head_size)
+        # each token goes through each of thre three matrices independelty of other tokens.
+        q = self.query(x) # (B,T,head_size) 
         k = self.key(x) # (B,T,head_size)
         v = self.value(x) # (B,T,head_size) - head size is the size of representation for each token
 
         # compute the attention weights
+        #This matrix multiplication creates a (B,T,T) attention matrix
+        #  Each entry (i,j) in this matrix represents how much token i should attend to token j
+        # The shape (B,T,T) explicitly shows the interaction: each token (row) has a weight for every other token (column)
         weights = q @ k.transpose(-2, -1) * k.shape[-1]**0.5 # (B,T,T) (scaling by sqrt of head size)
         mask=torch.tril(torch.ones(T,T))
 
